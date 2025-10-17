@@ -1,21 +1,18 @@
-document.title = "Markdown Loader";
-
 const urlParams = new URLSearchParams(window.location.search);
-const markdownUrl = urlParams.get('url');
-const markdownSourceLabel = document.querySelector("#markdown-source-label");
-const markdownContent = document.querySelector("#markdown-content");
+const markdownUrl = urlParams.get('url') || 'mkd-023.md';
+const sourceLabel = document.querySelector("#markdown-source-label");
+const contentDiv = document.querySelector("#markdown-content");
 
-const loadMarkdown = async (url) => {
-    const response = await fetch(url);
-    const text = await response.text();
-    markdownContent.innerHTML = marked(text);
-    highlightElement(markdownContent);
-};
+sourceLabel.textContent = markdownUrl;
 
-if (markdownUrl) {
-    markdownSourceLabel.textContent = `Source: ${markdownUrl}`;
-    loadMarkdown(markdownUrl);
-} else {
-    markdownSourceLabel.textContent = "Source: attachment.md";
-    loadMarkdown('attachment.md');
-}
+fetch(markdownUrl)
+    .then(response => response.text())
+    .then(markdown => {
+        contentDiv.innerHTML = marked(markdown);
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightElement(block);
+        });
+    })
+    .catch(error => {
+        contentDiv.textContent = 'Error loading markdown: ' + error;
+    });
